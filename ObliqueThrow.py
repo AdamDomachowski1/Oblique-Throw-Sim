@@ -1,17 +1,21 @@
 # Creating Space for program, basics parameters etc.
+from cmath import pi
 from time import sleep
 import turtle
+import math
 
 
 # Najpierw zapisujemy tylko Y za X odpowiednie beda inne funckje finalnie wszystko sklejamy w jedno
 
 # Class
 class object:
+    listX = []
     listY = []
-    def __init__(self,velocity,acceleration,timeofengine,corx,cory):
+    def __init__(self,velocity,acceleration,timeofengine,startangle,corx,cory):
         self.velocity = velocity
         self.acceleration = acceleration
         self.timeofengine = timeofengine
+        self.startangle = startangle
         self.corx = corx
         self.cory = cory
 
@@ -20,26 +24,38 @@ class object:
         time = 0
         while time < self.timeofengine:
             time += 0.1
-            Y = self.cory + self.velocity*time + 0.5*self.acceleration*time**2
+            X = self.corx + math.cos(self.startangle)*(self.velocity*time + 0.5*self.acceleration*time**2)
+            Y = self.cory + math.sin(self.startangle)*(self.velocity*time + 0.5*self.acceleration*time**2)
+            self.listX.append(X)
             self.listY.append(Y)
+            print(X,Y)
+        print("engine off")
 
     # Freefall
     def freefall(self):
         time = 0
-        cory2 = self.cory + self.velocity*self.timeofengine + 0.5*self.acceleration*self.timeofengine**2
+        corx2 = self.corx + math.cos(self.startangle)*(self.velocity*self.timeofengine + 0.5*self.acceleration*self.timeofengine**2)
+        cory2 = self.cory + math.sin(self.startangle)*(self.velocity*self.timeofengine + 0.5*self.acceleration*self.timeofengine**2)
         velocity2 = self.velocity + self.acceleration*self.timeofengine
+        X = corx2
         Y = cory2
         while Y > self.cory: #while rocket hits the ground
             time += 0.1
-            Y = cory2 + velocity2*time + 0.5*(-9.81)*time**2
+            X = corx2 + math.cos(self.startangle)*velocity2*time
+            Y = cory2 + math.sin(self.startangle)*velocity2*time + 0.5*(-9.81)*time**2
+            self.listX.append(X)
             self.listY.append(Y)
+            print(X,Y)
      
-    # Printing Coordinates to Terminal
-    def printcoordinates(self):
+    # Printing Coordinates to file
+    def savecoordinates(self):
+        file = open("coordinates.txt","w")
+
         i = 0
         while i < len(self.listY):
-            print(round(self.listY[i],2))
+            file.write(str(round(self.listX[i],4)) + " " + str(round(self.listY[i],4)) + "\n")
             i += 1
+        file.close()
 
     # Simulation based on list datas
     def simulate(self):
@@ -61,8 +77,9 @@ class object:
 
         # Simulation Process
         i = 0
-        while i < len(self.listY):
+        while i < len(self.listX):
             wn.update()
+            point.setx(self.listX[i])
             point.sety(self.listY[i])
             i += 1
             sleep(0.01)
@@ -70,10 +87,10 @@ class object:
 
 
 # Main
-rocket = object(0,10,8,0,-300)
+rocket = object(200,0,200,pi/4,0,0)
 rocket.thrust()
 rocket.freefall()
-#rocket.printcoordinates()
-rocket.simulate()
+rocket.savecoordinates()
+#rocket.simulate()
 
 
