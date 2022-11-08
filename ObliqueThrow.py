@@ -1,11 +1,12 @@
 # Creating Space for program, basics parameters etc.
 from cmath import pi
 from datetime import time
+from telnetlib import SE
 from time import sleep
 import turtle
 import math
 
-TIMESTEP = 0.5 # Necesary to simulation
+TIMESTEP = 0.1 # Necesary to simulation
 
 # Class
 class object:
@@ -14,15 +15,28 @@ class object:
     list_cory = []
     list_velx = []
     list_vely = []
+    list_accx = []
+    list_accy = []
 
-    def __init__(self,velocity,acceleration,timeofengine,startangle):
+
+    def __init__(self,velocity,acceleration,timeofengine,startangle,factor_k):
         self.velocity = velocity
+        self.list_velx.append(math.cos(startangle)*velocity)
+        self.list_vely.append(math.sin(startangle)*velocity)
+
         self.acceleration = acceleration
+        self.list_accx.append(math.cos(startangle)*acceleration)
+        self.list_accy.append(math.sin(startangle)*acceleration) 
+
         self.timeofengine = timeofengine
         self.startangle = startangle
-        self.corx = 0
-        self.cory = 0
+        self.factor_k = factor_k
 
+        self.corx = 0
+        self.list_corx.append(self.corx)
+
+        self.cory = 0
+        self.list_cory.append(self.cory)
 
 
     # Engine Force 
@@ -30,38 +44,41 @@ class object:
         time = 0
         while time < self.timeofengine:
             time += TIMESTEP
-            S = (self.velocity*time + 0.5*self.acceleration*time**2)
-            V = (self.velocity +self.acceleration*time)
-            x = self.corx + math.cos(self.startangle)*S
-            y = self.cory + math.sin(self.startangle)*S
-            VEL_X = math.cos(self.startangle)*V
-            VEL_Y = math.sin(self.startangle)*V
+            actual_x = self.list_corx[len(self.list_corx)-1]
+            actual_y = self.list_cory[len(self.list_cory)-1]
+            actual_vel_x = self.list_velx[len(self.list_velx)-1]
+            actual_vel_y = self.list_vely[len(self.list_vely)-1]
+            actual_acc_x = self.list_accx[len(self.list_accx)-1]
+            actual_acc_y = self.list_accy[len(self.list_accy)-1]
+            x = actual_x + actual_vel_x*1 + 0.5*actual_acc_x*1**2
+            y = actual_y + actual_vel_y*1 + 0.5*actual_acc_y*1**2
+            vel_x = actual_vel_x + actual_acc_x
+            vel_y = actual_vel_y + actual_acc_y
             self.list_corx.append(x)
             self.list_cory.append(y)
-            self.list_velx.append(VEL_X)
-            self.list_vely.append(VEL_Y)
-
-
+            self.list_velx.append(vel_x)
+            self.list_vely.append(vel_y)
 
     # Freefall
     def freefall(self):
         time = 0
-        S = self.velocity*self.timeofengine + 0.5*self.acceleration*self.timeofengine**2 # distance so far
-        V = self.velocity + self.acceleration*self.timeofengine # velocity reach while engine of
-        corx2 = self.corx + math.cos(self.startangle)*S # calculating coordinates where engine off
-        cory2 = self.cory + math.sin(self.startangle)*S 
-        x = corx2   # set this coordinates as a new start point (from here we uses other formula)
-        y = cory2
-        while y > self.cory: #while rocket hits the ground
-            time += TIMESTEP      
-            x = corx2 + (math.cos(self.startangle)*V*time) 
-            y = cory2 + (math.sin(self.startangle)*V*time + 0.5*(-9.81)*time**2)
-            VEL_X = math.cos(self.startangle)*V
-            VEL_Y = math.sin(self.startangle)*V + (-9.81)*time
+        while self.list_cory[len(self.list_cory)-1] > self.corx: # while point hits the ground
+            time += TIMESTEP
+            actual_x = self.list_corx[len(self.list_corx)-1]
+            actual_y = self.list_cory[len(self.list_cory)-1]
+            actual_vel_x = self.list_velx[len(self.list_velx)-1]
+            actual_vel_y = self.list_vely[len(self.list_vely)-1]
+            actual_acc_x = 0 # will add the resistance force
+            actual_acc_y = -9.81 # will add the resistance force
+            x = actual_x + actual_vel_x*1 + 0.5*actual_acc_x*1**2
+            y = actual_y + actual_vel_y*1 + 0.5*actual_acc_y*1**2
+            vel_x = actual_vel_x + actual_acc_x
+            vel_y = actual_vel_y + actual_acc_y
             self.list_corx.append(x)
             self.list_cory.append(y)
-            self.list_velx.append(VEL_X)
-            self.list_vely.append(VEL_Y)   
+            self.list_velx.append(vel_x)
+            self.list_vely.append(vel_y)
+
 
     # Printing Coordinates to file
     def save_datas_to_file(self):
@@ -72,6 +89,7 @@ class object:
             file.write( str(i+1) + " " + str(round(self.list_corx[i],4)) + " " + str(round(self.list_cory[i],4)) + " " + str(round(self.list_velx[i],4)) + " " + str(round(self.list_vely[i],4)) + "\n")
             i += 1
         file.close()
+
 
     # Simulation based on list datas
     def simulate(self):
@@ -137,10 +155,10 @@ class object:
 
 
 # Main
-rocket = object(0,9.81,100,pi/2.33)
+rocket = object(0,10,7,pi/2.33,0.01)
 rocket.thrust()
 rocket.freefall()
-rocket.save_datas_to_file()
+#rocket.save_datas_to_file()
 rocket.simulate()
 sleep(2)
 
