@@ -6,7 +6,7 @@ from time import sleep
 import turtle
 import math
 
-TIMESTEP = 0.1 # Necesary to simulation
+TIMESTEP = 0.05 # Necesary to simulation
 
 # Class
 class object:
@@ -48,8 +48,8 @@ class object:
             actual_y = self.list_cory[len(self.list_cory)-1]
             actual_vel_x = self.list_velx[len(self.list_velx)-1]
             actual_vel_y = self.list_vely[len(self.list_vely)-1]
-            actual_acc_x = self.list_accx[len(self.list_accx)-1]
-            actual_acc_y = self.list_accy[len(self.list_accy)-1]
+            actual_acc_x = self.list_accx[0] - (0.5*actual_vel_x**2*self.factor_k)
+            actual_acc_y = self.list_accy[0] - (0.5*actual_vel_y**2*self.factor_k)
             x = actual_x + actual_vel_x*1 + 0.5*actual_acc_x*1**2
             y = actual_y + actual_vel_y*1 + 0.5*actual_acc_y*1**2
             vel_x = actual_vel_x + actual_acc_x
@@ -58,6 +58,8 @@ class object:
             self.list_cory.append(y)
             self.list_velx.append(vel_x)
             self.list_vely.append(vel_y)
+            self.list_accx.append(actual_acc_x)
+            self.list_accy.append(actual_acc_y)
 
     # Freefall
     def freefall(self):
@@ -68,8 +70,8 @@ class object:
             actual_y = self.list_cory[len(self.list_cory)-1]
             actual_vel_x = self.list_velx[len(self.list_velx)-1]
             actual_vel_y = self.list_vely[len(self.list_vely)-1]
-            actual_acc_x = 0 # will add the resistance force
-            actual_acc_y = -9.81 # will add the resistance force
+            actual_acc_x = 0 - (0.5*actual_vel_x**2*self.factor_k)
+            actual_acc_y = -9.81 + (0.5*actual_vel_x**2*self.factor_k) # here plus because the move is in oposite direction
             x = actual_x + actual_vel_x*1 + 0.5*actual_acc_x*1**2
             y = actual_y + actual_vel_y*1 + 0.5*actual_acc_y*1**2
             vel_x = actual_vel_x + actual_acc_x
@@ -78,15 +80,17 @@ class object:
             self.list_cory.append(y)
             self.list_velx.append(vel_x)
             self.list_vely.append(vel_y)
+            self.list_accx.append(actual_acc_x)
+            self.list_accy.append(actual_acc_y)
 
 
     # Printing Coordinates to file
     def save_datas_to_file(self):
         file = open("datas.txt","w")
-        file.write("TIME COR_X COR_Y VEL_X VEL_Y ACCELERATION\n")
+        file.write("TIME COR_X COR_Y VEL_X VEL_Y ACC_X ACC_Y\n")
         i = 0
         while i < len(self.list_cory):
-            file.write( str(i+1) + " " + str(round(self.list_corx[i],4)) + " " + str(round(self.list_cory[i],4)) + " " + str(round(self.list_velx[i],4)) + " " + str(round(self.list_vely[i],4)) + "\n")
+            file.write( str(i+1) + " " + str(round(self.list_corx[i],4)) + " " + str(round(self.list_cory[i],4)) + " " + str(round(self.list_velx[i],4)) + " " + str(round(self.list_vely[i],4)) + " " + str(round(self.list_accx[i],4)) + " " + str(round(self.list_accy[i],4)) + "\n")
             i += 1
         file.close()
 
@@ -155,10 +159,10 @@ class object:
 
 
 # Main
-rocket = object(0,10,7,pi/2.33,0.01)
+rocket = object(0,20,10,pi/2.33,0.0001)
 rocket.thrust()
 rocket.freefall()
-#rocket.save_datas_to_file()
+rocket.save_datas_to_file()
 rocket.simulate()
 sleep(2)
 
