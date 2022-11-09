@@ -1,7 +1,5 @@
-# Creating Space for program, basics parameters etc.
-from cmath import pi
+# Creating Space for program, basics parameters etc.6
 from time import sleep
-from tkinter import *
 import turtle
 import math
 
@@ -47,9 +45,10 @@ class object:
             actual_y = self.list_cory[len(self.list_cory)-1]
             actual_vel_x = self.list_velx[len(self.list_velx)-1]
             actual_vel_y = self.list_vely[len(self.list_vely)-1]
-            actual_acc_x = self.list_accx[0] - ((actual_vel_x**2)*self.factor_k)
-            actual_acc_y = self.list_accy[0] - ((actual_vel_y**2)*self.factor_k)
-            print(actual_acc_y)
+            air_resistance_x = ((actual_vel_x**2)*self.factor_k)
+            air_resistance_y = ((actual_vel_y**2)*self.factor_k)
+            actual_acc_x = self.list_accx[0] - air_resistance_x
+            actual_acc_y = self.list_accy[0] - air_resistance_y
             x = actual_x + actual_vel_x*1 + 0.5*actual_acc_x*1**2
             y = actual_y + actual_vel_y*1 + 0.5*actual_acc_y*1**2
             vel_x = actual_vel_x + actual_acc_x
@@ -70,11 +69,11 @@ class object:
             actual_y = self.list_cory[len(self.list_cory)-1]
             actual_vel_x = self.list_velx[len(self.list_velx)-1]
             actual_vel_y = self.list_vely[len(self.list_vely)-1]
-            actual_acc_x = 0 - (actual_vel_x**2*self.factor_k)
-            if self.list_cory[len(self.list_cory)-1] > self.list_cory[len(self.list_cory)-2]:
-                actual_acc_y = -9.81 - (actual_vel_y**2*self.factor_k)
+            actual_acc_x = 0 - (actual_vel_x**2*self.factor_k) # acceleration in horizontal move
+            if self.list_cory[len(self.list_cory)-1] > self.list_cory[len(self.list_cory)-2]: # Check direction of move (Up or Down)
+                actual_acc_y = -9.81 - (actual_vel_y**2*self.factor_k) # vertical acceleration in case UP
             else:
-                actual_acc_y = -9.81 + (actual_vel_y**2*self.factor_k)
+                actual_acc_y = -9.81 + (actual_vel_y**2*self.factor_k) #vertical acceleration in case Down
             x = actual_x + actual_vel_x*1 + 0.5*actual_acc_x*1**2
             y = actual_y + actual_vel_y*1 + 0.5*actual_acc_y*1**2
             vel_x = actual_vel_x + actual_acc_x
@@ -101,31 +100,31 @@ class object:
     # Simulation based on list datas
     def simulate(self):
 
+        ## CALCULATING SCALE
         # Depending On X and Y sizes program will adjust visual simulation to fit trajectory in window
-        if len(self.list_corx)>0:
+        if len(self.list_corx)>0 and max(self.list_corx) != 0:
             scale_x = 400/max(self.list_corx)
         else:
             scale_x = 0
 
-        if len(self.list_cory)>0:
+        if len(self.list_cory)>0 and max(self.list_cory) != 0:
             scale_y = 400/max(self.list_cory)
         else:
             scale_y = 0
-
         # It is important to have one scale for both moves to see how it would look like in reality (1m | = 1m __ )
         if scale_x > scale_y:
             scale = scale_y
         else:
             scale = scale_x
 
-        # Creating Scene
+        ## Creating Scene
         wn = turtle.Screen()
         wn.title("Simulation by Adam")
         wn.bgcolor("white")
         wn.setup(width=800, height=800)
         wn.tracer(0)
 
-        # Surface
+        ## Creating Surface
         surface_line = turtle.Turtle()
         surface_line.speed(0)
         surface_line.shape("square")
@@ -134,7 +133,7 @@ class object:
         surface_line.penup()
         surface_line.goto(0,-350)
 
-        # Point
+        ## Creating Point
         point = turtle.Turtle()
         point.speed(0)
         point.shape("circle")
@@ -143,8 +142,17 @@ class object:
         point.penup()
         point.goto(self.corx,self.cory)
 
+        ## Creating Datas point
+        datas = turtle.Turtle()
+        datas.speed(0)
+        datas.shape("circle")
+        datas.color("black")
+        datas.shapesize(stretch_wid=0.01, stretch_len=0.01)
+        datas.penup()
+        datas.goto(-300,-300)
 
-        # Simulation Process
+
+        ## Simulation Process
         i = 0
         while i < len(self.list_corx):
             point.color("red")
@@ -155,30 +163,28 @@ class object:
             point.shapesize(stretch_wid=0.1, stretch_len=0.1)
             point.color("blue")
             point.stamp()
-            
-            #print((str)((self.list_corx[i])*scale - 300) + " " + (str)((self.list_cory[i])*scale - 300))
+            if i%5 == 0:
+                datas.clear()
+                datas.write( "V_x =" + str(round(self.list_velx[i],0)) + "  " + "V_y =" + str(round(self.list_vely[i],0)) + "  " + "Acc_x =" + str(round(self.list_accx[i],2)) + "  " + "Acc_y =" + str(round(self.list_accy[i],2)), font=("Verdana",15, "normal"))
             i += 1
-            sleep(0.001)
+            sleep(0.1)
 
 
 # Main
-# vel_0 = turtle.textinput("Datas to simulation", "Enter start velocity (standard is 0)")
-# print(vel_0)
-# acc_0 = turtle.textinput("Datas to simulation", "Enter acceleration generated by engine")
-# time_of_engine = turtle.textinput("Datas to simulation", "Enter time of engine power")
-# angle = turtle.textinput("Datas to simulation", "Enter start angle (in degrees)")
-# factor_k_decison = turtle.textinput("Datas to simulation", "Do you want air resitance? Y/n")
-# if factor_k_decison == 'Y':
-#    factor_k = 0.0001
-# else:
-#    factor_k = 0
+vel_0 = turtle.textinput("Datas to simulation", "Enter start velocity (m/s)")
+acc_0 = turtle.textinput("Datas to simulation", "Enter acceleration generated by engine (m/s^2)")
+time_of_engine = turtle.textinput("Datas to simulation", "Enter time of engine power (s)")
+angle = turtle.textinput("Datas to simulation", "Enter start angle (degrees)")
+factor_k_decison = turtle.textinput("Datas to simulation", "Do you want air resitance? Y/n")
+factor_k = 0
+if factor_k_decison == 'Y':
+   factor_k = 0.005
+rocket = object(int(vel_0),int(acc_0),int(time_of_engine),int(angle)*3.14/180,factor_k)
 
-#rocket = object(int(vel_0),int(acc_0),int(time_of_engine),int(angle)*180/pi,factor_k)
-rocket = object(0,20,10,45*3.14/180,0.0001)
+#rocket = object(300,0,2,45*3.14/180,0.00001)
 rocket.thrust()
 rocket.freefall()
 rocket.save_datas_to_file()
 rocket.simulate()
-sleep(2)
 
 
