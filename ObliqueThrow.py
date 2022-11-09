@@ -2,7 +2,6 @@
 from time import sleep
 import turtle
 import math
-
 TIMESTEP = 0.05 # Necesary to simulation
 
 # Class
@@ -60,6 +59,7 @@ class object:
             self.list_accx.append(actual_acc_x)
             self.list_accy.append(actual_acc_y)
 
+
     # Freefall
     def freefall(self):
         time = 0
@@ -100,6 +100,7 @@ class object:
     # Simulation based on list datas
     def simulate(self):
 
+
         ## CALCULATING SCALE
         # Depending On X and Y sizes program will adjust visual simulation to fit trajectory in window
         if len(self.list_corx)>0 and max(self.list_corx) != 0:
@@ -117,12 +118,14 @@ class object:
         else:
             scale = scale_x
 
+
         ## Creating Scene
         wn = turtle.Screen()
         wn.title("Simulation by Adam")
         wn.bgcolor("white")
         wn.setup(width=800, height=800)
         wn.tracer(0)
+
 
         ## Creating Surface
         surface_line = turtle.Turtle()
@@ -133,6 +136,7 @@ class object:
         surface_line.penup()
         surface_line.goto(0,-350)
 
+
         ## Creating Point
         point = turtle.Turtle()
         point.speed(0)
@@ -142,6 +146,7 @@ class object:
         point.penup()
         point.goto(self.corx,self.cory)
 
+
         ## Creating Datas point
         datas = turtle.Turtle()
         datas.speed(0)
@@ -149,25 +154,28 @@ class object:
         datas.color("black")
         datas.shapesize(stretch_wid=0.01, stretch_len=0.01)
         datas.penup()
-        datas.goto(-300,-300)
+        datas.goto(-400,-300)
 
 
         ## Simulation Process
         i = 0
         while i < len(self.list_corx):
-            point.color("red")
+            if i < self.timeofengine/TIMESTEP:
+                point.color("red")
+            else:
+                point.color("green")
             point.shapesize(stretch_wid=0.5, stretch_len=0.5)
             wn.update()
             point.setx((self.list_corx[i])*scale - 300)
             point.sety((self.list_cory[i])*scale - 300)
             point.shapesize(stretch_wid=0.1, stretch_len=0.1)
-            point.color("blue")
-            point.stamp()
             if i%5 == 0:
+                point.color("black")
+                point.stamp()
                 datas.clear()
-                datas.write( "V_x =" + str(round(self.list_velx[i],0)) + "  " + "V_y =" + str(round(self.list_vely[i],0)) + "  " + "Acc_x =" + str(round(self.list_accx[i],2)) + "  " + "Acc_y =" + str(round(self.list_accy[i],2)), font=("Verdana",15, "normal"))
+                datas.write( "V_x =" + str(round(self.list_velx[i],0)) + "  " + "V_y =" + str(round(self.list_vely[i],0)) + "  " + "Acc_x =" + str(round(self.list_accx[i],2)) + "  " + "Acc_y =" + str(round(self.list_accy[i],2))  + "  " + "X =" + str(round(self.list_corx[i]*(125/400000),2)) + "  " + "Y =" + str(round(self.list_cory[i]*(125/400000),2)), font=("Verdana",15, "normal"))
             i += 1
-            sleep(0.01)
+            sleep(0.02)
 
 
 # Main
@@ -178,6 +186,7 @@ factor_k_decison = turtle.textinput("Datas to simulation", "Do you want air resi
 factor_k = 0
 if factor_k_decison == 'Y':
    factor_k = 0.0005
+
 rocket = object(float(acc_0),float(time_of_engine),float(angle)*3.14/180,factor_k)
 
 #rocket = object(300,0,2,45*3.14/180,0.00001)
